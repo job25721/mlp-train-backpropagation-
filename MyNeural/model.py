@@ -1,4 +1,4 @@
-from MyNeural.functions import prediction_error ,denormalize
+from MyNeural.functions import prediction_error ,denormalize , gradient_descent_output
 from MyNeural.layers import layers_sumary
 from random import shuffle
 import os
@@ -21,10 +21,12 @@ class Model:
 
     def Fit(self, train_dataset, epochs):
         for i in range(epochs):
-            #find grad here -> update w here
+
             print("-----------------------------------------------------------")
             print("TRAINING EPOCH", i + 1, "...")
             for data in train_dataset:
+
+
                 d = data["station1"] + data["station2"]
                 # inputLayers
                 for idx, input_node in enumerate(self.input_layer, start=0):
@@ -59,6 +61,8 @@ class Model:
                 print("desire output : ", data["desireOutput"], "actual output : ", output_node.output)
                 print("desire output : ", denormalize(data["desireOutput"],self.dataset_max,self.dataset_min) , "actual output : ", denormalize(output_node.output,self.dataset_max,self.dataset_min))
                 print("err : ", err * 100, "%")
-                break
+                # find grad here -> update w here
+                gradient_descent_output(err=err,old_weight=)
+                break # read one line dataset for test
 
             shuffle(train_dataset)

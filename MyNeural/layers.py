@@ -44,7 +44,7 @@ def Input(d):
     for i in range(d):
         randWeight = 0.0
         while randWeight == 0.0:
-            randWeight = round(random.uniform(-0.9, 1.0), 1)
+            randWeight = round(random.uniform(0.1, 1.0), 1)
         node = Node(w=randWeight, b=None, activation=None, name="Input")
         input_layer.append(node)
     return input_layer

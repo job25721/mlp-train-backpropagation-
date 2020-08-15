@@ -14,12 +14,13 @@ def denormalize(z,max_x,min_x):
     return z * (max_x -min_x) + min_x
 
 def prediction_error(desire_output, actual_output):
-    err = (desire_output - actual_output) ** 2
+    err = ((desire_output - actual_output) ** 2)/2
     return err
 
 
-def gradient_descent(w, err):
+def gradient_descent_output(old_weight, err):
     new_weight = 0
+    new_weight = old_weight - (err*())
     return new_weight
 
 
