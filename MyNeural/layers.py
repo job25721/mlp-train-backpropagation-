@@ -21,7 +21,7 @@ class Node:
 
     def showNodeDetail(self):
         print("[ weight :", self.w, ", bias :", self.b, ", input :",
-              self.input, ", output :", self.output, "]")
+              self.input, ", output :", self.output,"local_grad :",self.local_gradient ,"]")
 
     def addInput(self, input):
         self.input = input
@@ -40,7 +40,6 @@ class Node:
                     self.y = self.activation(self.input + self.b)
                     for i,w in enumerate(self.w,start=0):
                         self.output[i] = w * self.y
-
             else:
                 self.y = self.input
                 for i, w in enumerate(self.w, start=0):

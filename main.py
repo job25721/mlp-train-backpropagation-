@@ -42,5 +42,5 @@ my_model = Model(input_layer=InputLayer, hidden_layers=[
 # my_model.sumary()
 
 # train model
-my_model.Fit(train_dataset=trainDataset, epochs=1)
+my_model.Fit(train_dataset=trainDataset, epochs=200)
 my_model.sumary()

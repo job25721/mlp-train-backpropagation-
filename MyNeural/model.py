@@ -1,4 +1,5 @@
-from MyNeural.functions import prediction_error, denormalize, local_gradient_output, local_gradient_hidden,  initilize_weight
+from MyNeural.functions import prediction_error, denormalize, local_gradient_output, local_gradient_hidden, \
+    initialize_weight
 from MyNeural.layers import layers_sumary
 from random import shuffle
 import numpy as np
@@ -18,20 +19,18 @@ class Model:
     def create_model(self):
         for input_node in self.input_layer:
             for i in range(len(self.hidden_layers[0])):
-                input_node.w.append(initilize_weight(node=input_node))
+                input_node.w.append(initialize_weight(node=input_node))
                 input_node.output.append(0.0)
 
         for l, hidden_layer in enumerate(self.hidden_layers):
             for hidden_node in hidden_layer:
                 if l == len(self.hidden_layers) - 1:
                     for i in self.output_layer:
-                        hidden_node.w.append(
-                            initilize_weight(node=hidden_node))
+                        hidden_node.w.append(initialize_weight(node=hidden_node))
                         hidden_node.output.append(0.0)
                 else:
                     for i in range(len(self.hidden_layers[l + 1])):
-                        hidden_node.w.append(
-                            initilize_weight(node=hidden_node))
+                        hidden_node.w.append(initialize_weight(node=hidden_node))
                         hidden_node.output.append(0.0)
 
     def sumary(self):
@@ -51,9 +50,8 @@ class Model:
                 loading_idicator += "="
             print("[Loading ", loading_idicator + "=>", "]", end='\r')
             for data in train_dataset:
-
                 d = data["station1"] + data["station2"]
-                # inputLayers
+                # inputLayer
                 for idx, input_node in enumerate(self.input_layer, start=0):
                     input_node.addInput(d[idx])
                     input_node.calculateOutput()
@@ -68,45 +66,53 @@ class Model:
                             hidden_node.addInput(sum([node.output[i] for node in self.hidden_layers[count - 1]]))
                             hidden_node.calculateOutput()
 
-                # outputLayers
+                # outputLayer
                 for i, output_node in enumerate(self.output_layer, start=0):
                     output_node.addInput(sum([node.output[i] for node in self.hidden_layers[len(self.hidden_layers) - 1]]))
                     output_node.calculateOutput()
-                    # sleep(0.00001)
-                err = prediction_error(
-                    data["desireOutput"], output_node.output)
-                print("desire output : ",
-                      data["desireOutput"], "actual output : ", output_node.output)
-                print("desire output : ", denormalize(data["desireOutput"], self.dataset_max, self.dataset_min),
-                      "actual output : ", denormalize(
-                        output_node.output, self.dataset_max, self.dataset_min))
+                err = prediction_error(data["desireOutput"], output_node.output)
+                # print("desire output : ",
+                #       data["desireOutput"], "actual output : ", output_node.output)
+                # print("desire output : ", denormalize(data["desireOutput"], self.dataset_max, self.dataset_min),
+                #       "actual output : ", denormalize(
+                #         output_node.output, self.dataset_max, self.dataset_min))
                 print("err : ", err * 100, "%")
+
                 # backpropergation
 
-                #find local gradient
+                # find local gradient
                 for output_node in self.output_layer:
-                    output_node.local_gradient = local_gradient_output(err=err,y=output_node.y)
+                    output_node.local_gradient = local_gradient_output(err=err, y=output_node.y)
 
-                for i,hidden_layer in reversed(list(enumerate(self.hidden_layers))):
+                for i, hidden_layer in reversed(list(enumerate(self.hidden_layers))):
                     for hidden_node in hidden_layer:
                         summation = 0.0
                         if i == len(self.hidden_layers) - 1:
-                            for j,output_node in enumerate(self.output_layer,start=0):
+                            for j, output_node in enumerate(self.output_layer, start=0):
                                 summation += (output_node.local_gradient * hidden_node.w[j])
-                            hidden_node.local_gradient = local_gradient_hidden(hidden_node.y,summation)
+                            hidden_node.local_gradient = local_gradient_hidden(hidden_node.y, summation)
                         else:
-                            for j,node in enumerate(self.hidden_layers[i+1]):
+                            for j, node in enumerate(self.hidden_layers[i + 1]):
                                 summation += (node.local_gradient * hidden_node.w[j])
-                            hidden_node.local_gradient = local_gradient_hidden(hidden_node.y,summation)
+                            hidden_node.local_gradient = local_gradient_hidden(hidden_node.y, summation)
 
-                for h in self.hidden_layers:
-                    for n in h:
-                        print(n.local_gradient)
-                for n in self.output_layer:
-                    print(n.local_gradient)
+                #update weight
+                for i, hidden_layer in reversed(list(enumerate(self.hidden_layers))):
+                    for hidden_node in hidden_layer:
+                        if i == len(self.hidden_layers) - 1:
+                            for j, output_node in enumerate(self.output_layer, start=0):
+                                new_weight = hidden_node.w[j] - output_node.local_gradient
+                                hidden_node.updateWeight(new_weight, j)
+                        else:
+                            for j, node in enumerate(self.hidden_layers[i + 1]):
+                                new_weight = hidden_node.w[j] - node.local_gradient
+                                hidden_node.updateWeight(new_weight, j)
 
+                for input_node in self.input_layer:
+                    for i, h1_node in enumerate(self.hidden_layers[0]):
+                        new_weight = input_node.w[i] - h1_node.local_gradient
+                        input_node.updateWeight(new_weight, i)
 
-
-                break  # read one line dataset for test
+                # break  # read one line dataset for test
 
             shuffle(train_dataset)
