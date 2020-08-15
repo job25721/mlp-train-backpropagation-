@@ -17,10 +17,17 @@ def prediction_error(desire_output, actual_output):
     err = ((desire_output - actual_output) ** 2)/2
     return err
 
+def local_gradient_output(y,err):
+    return err * (y * (1-y));
 
-def gradient_descent_output(old_weight, err,output):
-    new_weight = old_weight - err*(output*(1-output))
-    return new_weight
+
+def local_gradient_hidden(y,summation_next_local_gradient):
+    return y * (1-y) * summation_next_local_gradient
+
+# def gradient_descent_output(old_weight, err,output):
+#     new_weight = old_weight - output_local_gradient(err,output)
+#     return new_weight
+
 def gradient_descent_hidden(y):
     return y*(1-y)
 def sigmoid(x):

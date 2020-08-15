@@ -9,6 +9,7 @@ class Node:
         self.activation = activation
         self.w = []
         self.b = b
+        self.local_gradient = None
         self.name = name
 
 
@@ -37,13 +38,13 @@ class Node:
                     self.output = self.y
                 else:
                     self.y = self.activation(self.input + self.b)
-                    for w in self.w:
-                        self.output.append(w * self.y)
+                    for i,w in enumerate(self.w,start=0):
+                        self.output[i] = w * self.y
 
             else:
                 self.y = self.input
-                for w in self.w:
-                    self.output.append(w * self.y)
+                for i, w in enumerate(self.w, start=0):
+                    self.output[i] = w * self.y
         return self.output
 
 

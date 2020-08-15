@@ -39,7 +39,7 @@ OutputLayer = Output(d=1, activation=sigmoid)
 # create model
 my_model = Model(input_layer=InputLayer, hidden_layers=[
                  h1,h2,h3], output_layer=OutputLayer, dataset_min=min_x, dataset_max=max_x)
-my_model.sumary()
+# my_model.sumary()
 
 # train model
 my_model.Fit(train_dataset=trainDataset, epochs=1)
