@@ -2,16 +2,18 @@ from numpy import random
 
 
 class Node:
-    def __init__(self, w, b, activation, name):
+    def __init__(self,b, activation, name):
         self.input = None
-        self.output = None
+        self.output = []
+        self.y = 0
         self.activation = activation
-        self.w = w
+        self.w = []
         self.b = b
         self.name = name
 
-    def updateWeight(self, weight):
-        self.w = weight
+
+    def updateWeight(self, weight,i):
+        self.w[i] = weight
 
     def updateBias(self, bias):
         self.b = bias
@@ -30,22 +32,25 @@ class Node:
             if self.b == None:
                 self.b = 0.0
             if (self.activation != None):
-                if self.w == None:  # outputLayer
-                    self.output = self.activation(self.input + self.b)
+                if self.w == []:  # outputLayer
+                    self.y = self.activation(self.input + self.b)
+                    self.output = self.y
                 else:
-                    self.output = self.w * self.activation(self.input + self.b)
+                    self.y = self.activation(self.input + self.b)
+                    for w in self.w:
+                        self.output.append(w * self.y)
+
             else:
-                self.output = self.w * self.input
+                self.y = self.input
+                for w in self.w:
+                    self.output.append(w * self.y)
         return self.output
 
 
 def Input(d):
     input_layer = []
     for i in range(d):
-        randWeight = 0.0
-        while randWeight == 0.0:
-            randWeight = round(random.uniform(0.1, 1.0), 1)
-        node = Node(w=randWeight, b=None, activation=None, name="Input")
+        node = Node(b=None, activation=None, name="Input")
         input_layer.append(node)
     return input_layer
 
@@ -53,11 +58,8 @@ def Input(d):
 def Dense(d, activation, name):
     hidden_layer = []
     for i in range(d):
-        randWeight = 0.0
         randBias = round(random.uniform(0.1, 1.0), 1)
-        while randWeight == 0.0:
-            randWeight = round(random.uniform(-0.9, 1.0), 1)
-        node = Node(randWeight, randBias, activation, name)
+        node = Node(b=randBias, activation=activation, name=name)
         hidden_layer.append(node)
     return hidden_layer
 
@@ -66,7 +68,7 @@ def Output(d, activation):
     output_layer = []
     for i in range(d):
         randBias = round(random.uniform(0.1, 1.0), 1)
-        node = Node(None, randBias, activation, name="Output")
+        node = Node(randBias, activation, name="Output")
         output_layer.append(node)
     return output_layer
 

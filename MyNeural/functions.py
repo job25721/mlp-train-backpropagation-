@@ -18,13 +18,16 @@ def prediction_error(desire_output, actual_output):
     return err
 
 
-def gradient_descent_output(old_weight, err):
-    new_weight = 0
-    new_weight = old_weight - (err*())
+def gradient_descent_output(old_weight, err,output):
+    new_weight = old_weight - err*(output*(1-output))
     return new_weight
-
-
+def gradient_descent_hidden(y):
+    return y*(1-y)
 def sigmoid(x):
     return 1 / (1 + math.exp(-x))
 
-
+def initilize_weight(node):
+    randWeight = round(np.random.uniform(0.1, 1.0), 1)
+    while node.w.__contains__(randWeight):
+        randWeight = round(np.random.uniform(0.1, 1.0), 1)
+    return randWeight

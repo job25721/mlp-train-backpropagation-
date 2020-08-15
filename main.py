@@ -27,19 +27,20 @@ for i, data in enumerate(normalization(group, max_x, min_x), start=0):
     trainDataset[i]["station1"] = list(data[0:4])
     trainDataset[i]["station2"] = list(data[4:8])
     trainDataset[i]["desireOutput"] = data[8]
-print(trainDataset)
+# print(trainDataset)
 
 # create a neural networks
 InputLayer = Input(d=8)
-h1 = Dense(d=10, activation=sigmoid, name='h1')
-h2 = Dense(d=5, activation=sigmoid, name='h2')
+h1 = Dense(d=3, activation=sigmoid, name='h1')
+h2 = Dense(d=2, activation=sigmoid, name='h2')
 h3 = Dense(d=2, activation=sigmoid, name='h3')
 OutputLayer = Output(d=1, activation=sigmoid)
 
 # create model
 my_model = Model(input_layer=InputLayer, hidden_layers=[
-                 h1, h2, h3], output_layer=OutputLayer, dataset_min=min_x, dataset_max=max_x)
+                 h1,h2,h3], output_layer=OutputLayer, dataset_min=min_x, dataset_max=max_x)
 my_model.sumary()
 
 # train model
-my_model.Fit(train_dataset=trainDataset, epochs=5)
+my_model.Fit(train_dataset=trainDataset, epochs=1)
+my_model.sumary()
