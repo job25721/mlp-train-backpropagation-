@@ -4,15 +4,15 @@ from MyNeural.model import Model
 from MyNeural.layers import Input, Dense, Output
 from random import shuffle
 from time import sleep
+from numpy import random
 # ============= read dataset===================
 f = open('./dataset/Flood_dataset.txt', 'r')
 floodDataset = readFloodDataset(file=f)
-# shuffle(floodDataset)
+shuffle(floodDataset)
 train_length = int(round(len(floodDataset) * 0.9, 0))
 trainDataset = floodDataset[0:train_length]
 testDataset = floodDataset[train_length:len(floodDataset)]
 # ==============================================
-
 # normalization
 group = [data["station1"] + data["station2"] +
          [data["desireOutput"]] for data in trainDataset]
@@ -31,16 +31,19 @@ for i, data in enumerate(normalization(group, max_x, min_x), start=0):
 
 # create a neural networks
 InputLayer = Input(d=8)
-h1 = Dense(d=3, activation=sigmoid, name='h1')
-h2 = Dense(d=2, activation=sigmoid, name='h2')
-h3 = Dense(d=2, activation=sigmoid, name='h3')
+h1 = Dense(d=10, activation=sigmoid, name='h1')
+h2 = Dense(d=5, activation=sigmoid, name='h2')
 OutputLayer = Output(d=1, activation=sigmoid)
 
 # create model
 my_model = Model(input_layer=InputLayer, hidden_layers=[
-                 h1,h2,h3], output_layer=OutputLayer, dataset_min=min_x, dataset_max=max_x)
-# my_model.sumary()
-
-# train model
-my_model.Fit(train_dataset=trainDataset, epochs=200)
+                 h1,h2], output_layer=OutputLayer, dataset_min=min_x, dataset_max=max_x)
 my_model.sumary()
+
+m = round(random.uniform(0.1,0.9),1)
+l = round(random.uniform(0.1,0.9),1)
+# train model
+my_model.Fit(train_dataset=trainDataset, epochs=100,momentum_rate=m,learning_rate=l)
+print("alpha =",m,"etha =",l)
+
+

@@ -5,9 +5,10 @@ class Node:
     def __init__(self,b, activation, name):
         self.input = None
         self.output = []
-        self.y = 0
+        self.y = 0.0
         self.activation = activation
         self.w = []
+        self.w_old = []
         self.b = b
         self.local_gradient = None
         self.name = name
@@ -18,10 +19,9 @@ class Node:
 
     def updateBias(self, bias):
         self.b = bias
-
     def showNodeDetail(self):
-        print("[ weight :", self.w, ", bias :", self.b, ", input :",
-              self.input, ", output :", self.output,"local_grad :",self.local_gradient ,"]")
+        print("[ w :", self.w, ", w(n-1) : ",self.w_old, ", b :", self.b, ", input :",
+              self.input,"y :",self.y,"local_grad :",self.local_gradient ,"]")
 
     def addInput(self, input):
         self.input = input
@@ -33,18 +33,19 @@ class Node:
             if self.b == None:
                 self.b = 0.0
             if (self.activation != None):
-                if self.w == []:  # outputLayer
-                    self.y = self.activation(self.input + self.b)
-                    self.output = self.y
-                else:
-                    self.y = self.activation(self.input + self.b)
-                    for i,w in enumerate(self.w,start=0):
-                        self.output[i] = w * self.y
+                x = self.b
+                for w in self.w:
+                    x+= (self.input * w)
+                self.y = self.activation(x)
             else:
-                self.y = self.input
-                for i, w in enumerate(self.w, start=0):
-                    self.output[i] = w * self.y
+                if len(self.w) == 0:
+                    self.y = self.input
+                else:
+                    for w in self.w:
+                        self.y += self.input * w
+                self.y += self.b
         return self.output
+
 
 
 def Input(d):
