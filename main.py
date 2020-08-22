@@ -32,12 +32,13 @@ for i, data in enumerate(normalization(group, max_x, min_x), start=0):
 
 # create a neural networks
 InputLayer = Input(d=8)
-h1 = Dense(d=120, activation=sigmoid, name='h1')
+h1 = Dense(d=2, activation=sigmoid, name='h1')
+h2 = Dense(d=2,activation=sigmoid, name='h2')
 OutputLayer = Output(d=1, activation=sigmoid)
 
 # create model
 my_model = Model(input_layer=InputLayer, hidden_layers=[
-    h1], output_layer=OutputLayer, dataset_min=min_x, dataset_max=max_x)
+    h1,h2], output_layer=OutputLayer, dataset_min=min_x, dataset_max=max_x)
 my_model.sumary()
 
 m = round(random.uniform(0.1, 0.9), 1)
@@ -45,7 +46,7 @@ l = round(random.uniform(0.1, 0.9), 1)
 # train model
 my_model.Fit(train_dataset=trainDataset, epochs=1,
              momentum_rate=1, learning_rate=l)
-# my_model.sumary()
+my_model.sumary()
 # print("alpha =", m, "etha =", l)
 # print("train complete...")
 # sleep(3)

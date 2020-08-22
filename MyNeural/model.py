@@ -72,7 +72,7 @@ class Model:
                 avg_err += err
 
 
-                print(z, self.output_layer[0].y)
+                print("output :",z,"=", self.output_layer[0].y)
                 # if self.output_layer[0].y == 1.0:
                 #     break
 
