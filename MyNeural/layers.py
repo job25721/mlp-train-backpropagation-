@@ -26,24 +26,20 @@ class Node:
     def addInput(self, input):
         self.input = input
 
-    def calculateOutput(self):
-        if self.input == None:
-            print("please add input")
-        else:
+    def calculateOutput(self,prev_y):
+        if len(prev_y ) != 0:
             if self.b == None:
                 self.b = 0.0
             if (self.activation != None):
-                x = self.b
-                for w in self.w:
-                    x+= (self.input * w)
-                self.y = self.activation(x)
-            else:
-                if len(self.w) == 0:
-                    self.y = self.input
-                else:
-                    for w in self.w:
-                        self.y += self.input * w
-                self.y += self.b
+                sum = 0.0
+                for i,w in enumerate(self.w):
+                    sum += prev_y[i] * w
+                self.input = sum
+                # self.input += self.b
+                self.y = self.activation(self.input)
+        else:
+            if len(self.w) == 0:
+                self.y = self.input
         return self.output
 
 

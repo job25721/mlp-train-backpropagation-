@@ -17,7 +17,7 @@ def denormalize(z, max_x, min_x):
 
 
 def prediction_error(desire_output, actual_output):
-    err = ((desire_output - actual_output) ** 2) /2
+    err = ((desire_output - actual_output) ** 2) / 2
     return err
 
 
@@ -26,28 +26,28 @@ def sum_squre_error():
 
 
 def local_gradient_output(y, err):
-    return err * (y * (1 - y));
+    # print(y)
+    return err * (y *(1-y))
 
 
 def local_gradient_hidden(y, summation_next_local_gradient):
     return y * (1 - y) * summation_next_local_gradient
 
 
-def update_weight(current_w, old_w, local_gradient, y, alpha, etha):
-    return current_w + (alpha * (current_w - old_w)) + (etha * (local_gradient * y))
-
-
-def gradient_descent_hidden(y):
-    return y * (1 - y)
+def update_weight(current_w, old_w, local_gradient, y_prev, alpha, etha):
+    # print(y_prev)
+    return current_w + (alpha * (current_w - old_w)) + (etha * (local_gradient * y_prev))
+    # return current_w + etha*local_gradient*y_prev
 
 
 def sigmoid(x):
-    # print(x)
+    # print("x is:",x)
+    # print("res is:",1 / (1 + math.exp(-x)))
     return 1 / (1 + math.exp(-x))
 
 
 def initialize_weight(node):
     randWeight = round(np.random.uniform(0.1, 1.0), 1)
-    while node.w.__contains__(randWeight):
-        randWeight = round(np.random.uniform(0.1, 1.0), 1)
+    # while randWeight == 0:
+    #     randWeight = round(np.random.uniform(-1.0, 1.0), 1)
     return randWeight
