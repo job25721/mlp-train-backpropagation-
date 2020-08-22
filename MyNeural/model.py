@@ -125,34 +125,4 @@ class Model:
             # print("avg err :", avg_err * 100, "%")
             shuffle(train_dataset)
 
-    def forward(self, input_data):
-        avg_err = 0.0
-        for data in input_data:
-            d = data["station1"] + data["station2"]
-            # inputLayer
-            for idx, input_node in enumerate(self.input_layer, start=0):
-                input_node.addInput(d[idx])
-                input_node.calculateOutput()
 
-            # hiddenLayers
-            for count, hidden_layer in enumerate(self.hidden_layers, start=0):
-                for i, hidden_node in enumerate(hidden_layer, start=0):
-                    if count == 0:
-                        hidden_node.addInput(
-                            sum([node.y for node in self.input_layer]))
-                        hidden_node.calculateOutput()
-                    else:
-                        hidden_node.addInput(
-                            sum([node.y for node in self.hidden_layers[count - 1]]))
-                        hidden_node.calculateOutput()
-
-            # outputLayer
-            for i, output_node in enumerate(self.output_layer, start=0):
-                output_node.addInput(
-                    sum([node.y for node in self.hidden_layers[len(self.hidden_layers) - 1]]))
-                output_node.calculateOutput()
-            err = prediction_error(
-                data["desireOutput"], self.output_layer[0].y)
-            print(err)
-            avg_err += err
-        print("avg err : ", avg_err/len(test_dataset))
