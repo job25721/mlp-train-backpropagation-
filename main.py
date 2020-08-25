@@ -4,49 +4,45 @@ from MyNeural.model import Model
 from MyNeural.layers import Input, Dense, Output
 from random import shuffle
 from time import sleep
-from numpy import random
+import numpy as np
 
 # ============= read dataset===================
 f = open('./dataset/Flood_dataset.txt', 'r')
 floodDataset = readFloodDataset(file=f)
-# shuffle(floodDataset)
-train_length = int(round(len(floodDataset) * 0.9, 0))
-trainDataset = floodDataset[0:train_length]
-testDataset = floodDataset[train_length:len(floodDataset)]
+
+
 # ==============================================
 # normalization
-group = [data["station1"] + data["station2"] +
-         [data["desireOutput"]] for data in trainDataset]
-tmp = []
-for s in group:
-    for d in s:
-        tmp.append(d)
-max_x = max(tmp)
-min_x = min(tmp)
+train_dataset = [data["station1"] + data["station2"] + [data["desireOutput"]] for data in floodDataset]
+max_x = np.array(train_dataset).max()
+min_x = np.array(train_dataset).min()
 
-for i, data in enumerate(normalization(group, max_x, min_x), start=0):
-    trainDataset[i]["station1"] = list(data[0:4])
-    trainDataset[i]["station2"] = list(data[4:8])
-    trainDataset[i]["desireOutput"] = data[8]
-# print(trainDataset)
+train_dataset = normalization(train_dataset,max_x,min_x)
+
+
 
 # create a neural networks
 InputLayer = Input(d=8)
-h1 = Dense(d=2, activation=sigmoid, name='h1')
-h2 = Dense(d=2,activation=sigmoid, name='h2')
+h1 = Dense(d=3, activation=sigmoid, name='h1')
+h2 = Dense(d=3,activation=sigmoid, name='h2')
 OutputLayer = Output(d=1, activation=sigmoid)
 
 # create model
 my_model = Model(input_layer=InputLayer, hidden_layers=[
     h1,h2], output_layer=OutputLayer, dataset_min=min_x, dataset_max=max_x)
-my_model.sumary()
+# my_model.sumary()
 
-m = round(random.uniform(0.1, 0.9), 1)
-l = round(random.uniform(0.1, 0.9), 1)
+# x = np.random.rand(2,1)
+# print(x)
+# x = np.zeros((1,2))
+# y =np.zeros((2,1))
+# print(x.dot(y))
+m = round(np.random.uniform(0.1, 0.9), 1)
+l = round(np.random.uniform(0.1, 0.9), 1)
 # train model
-my_model.Fit(train_dataset=trainDataset, epochs=1,
-             momentum_rate=1, learning_rate=l)
-my_model.sumary()
+my_model.Fit(dataset=train_dataset, epochs=1,
+             momentum_rate=m, learning_rate=l,cross_validation=0.1)
+# my_model.sumary()
 # print("alpha =", m, "etha =", l)
 # print("train complete...")
 # sleep(3)

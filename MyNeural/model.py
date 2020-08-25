@@ -1,10 +1,7 @@
-from MyNeural.functions import prediction_error, denormalize, local_gradient_output, local_gradient_hidden,  initialize_weight, update_weight
+from MyNeural.functions import prediction_error, denormalize, local_gradient_output, local_gradient_hidden
 from MyNeural.layers import layers_sumary
 from random import shuffle
 import numpy as np
-import os
-from time import sleep
-
 
 
 class Model:
@@ -14,26 +11,21 @@ class Model:
         self.output_layer = output_layer
         self.dataset_max = dataset_max
         self.dataset_min = dataset_min
+        self.layers = []
         self.create_model()
 
     def create_model(self):
+        self.layers.append(self.input_layer)
+        for layer in self.hidden_layers:
+            self.layers.append(layer)
+        self.layers.append(self.output_layer)
+
         # initialize weight
-        for l, hidden_layer in enumerate(self.hidden_layers):
-            for hidden_node in hidden_layer:
-                if l == 0:
-                    for i in range(len(self.input_layer)):
-                        hidden_node.w.append(
-                            initialize_weight(node=hidden_node))
-                        hidden_node.w_old.append(0.0)
-                else:
-                    for i in range(len(self.hidden_layers[l - 1])):
-                        hidden_node.w.append(
-                            initialize_weight(node=hidden_node))
-                        hidden_node.w_old.append(0.0)
-        for hidden_node in self.hidden_layers[len(self.hidden_layers) - 1]:
-            for output_node in self.output_layer:
-                output_node.w.append(initialize_weight(node=output_node))
-                output_node.w_old.append(0.0)
+        for i,layer in enumerate(self.layers):
+            if i != 0:
+                for node in layer:
+                    node.w = np.random.rand(len(self.layers[i-1]),1)
+                    node.w_old = np.zeros((len(self.layers[i-1]),1))
 
     def sumary(self):
         layers = [self.input_layer]
@@ -42,87 +34,108 @@ class Model:
         layers.append(self.output_layer)
         layers_sumary(layers)
 
-    def Fit(self, train_dataset, epochs, momentum_rate, learning_rate):
-        # loading_idicator = ""
-        for epoch in range(epochs):
-            print("--------------------------------------------------------------------")
-            print("EPOCH", epoch + 1, "...")
-
-            avg_err = 0.0
-
-            for z,data in enumerate(train_dataset,start=0):
-
-                d = data["station1"] + data["station2"]
-                for idx,input_node in enumerate(self.input_layer):
-                    input_node.addInput(d[idx])
-                    input_node.calculateOutput([])
-
-                for count,hidden_layer in enumerate(self.hidden_layers,start=0):
-                    for node in hidden_layer:
-                        if count == 0:
-                            node.calculateOutput([prev_y.y for prev_y in self.input_layer])
-                        else:
-                            node.calculateOutput([prev_y.y for prev_y in self.hidden_layers[count-1]])
-
-                for output_node in self.output_layer:
-                    output_node.calculateOutput([prev_y.y for prev_y in self.hidden_layers[len(self.hidden_layers)-1]])
+    def Fit(self, dataset, epochs, momentum_rate, learning_rate,cross_validation):
+        cross_len = int(round((len(dataset)*0.1),0))
+        block = []
+        random_set = []
+        few_dataset = []
+        for i in range(10):
+            rand = np.random.randint(0, 9)
+            while random_set.__contains__(rand):
+                rand = np.random.randint(0, 10)
+            random_set.append(rand)
+            block.append(dataset[i*cross_len:cross_len+(i*cross_len)])
+            if i == 9 and sum([len(b) for b in block]) < len(dataset) :
+                few_dataset = dataset[cross_len+(i*cross_len):len(dataset)]
 
 
-                err = prediction_error(desire_output=data["desireOutput"],actual_output=self.output_layer[0].y)
-                avg_err += err
+
+        for c in range(10):
+            cross_valid = block[random_set[c]]
+            train = []
+            for n in range(9):
+                rand = np.random.randint(0, 9)
+                while rand == c:
+                    rand = np.random.randint(0, 10)
+                train.append(block[rand])
 
 
-                print("output :",z,"=", self.output_layer[0].y)
-                # if self.output_layer[0].y == 1.0:
-                #     break
 
-                #back popergation
-                #find local gradient
+            # for epoch in range(epochs):
+            #
+            #     print("EPOCH:",epoch+1,"====================================================")
+            #     for z,data in enumerate(train):
+            #         input_data = data[0:8]
+            #         desire_output = [data[8]]
+            #
+            #         # forward
+            #         for l, layer in enumerate(self.layers):
+            #             for i, node in enumerate(layer):
+            #                 if l == 0:
+            #                     node.addInput(input_data[i])
+            #                     node.calculateOutput([])
+            #                 else:
+            #                     x = np.array([prev.y for prev in self.layers[l - 1]]).reshape(1, len(self.layers[l - 1]))
+            #                     node.calculateOutput(x)
+            #
+            #         # print(z,self.layers[len(self.layers)-1][0].y)
+            #         err = []
+            #         for i, node in enumerate(self.output_layer):
+            #             err.append(prediction_error(desire_output[i],node.y))
+            #
+            #
+            #
+            #
+            #
+            #         # back propergate
+            #         # find delta
+            #         for l, layer in reversed(list(enumerate(self.layers))):
+            #             if l != 0:
+            #                 for i, node in enumerate(layer):
+            #                     if l == len(self.layers) - 1:
+            #                         node.local_gradient = local_gradient_output(node.y, err[i])
+            #                     else:
+            #                         delta_set = np.array([n.local_gradient for n in self.layers[l + 1]]).reshape(
+            #                             (1, len(self.layers[l + 1])))
+            #                         w_set = np.array([n.w[i] for n in self.layers[l + 1]])
+            #                         node.local_gradient = local_gradient_hidden(node.y, delta_set.dot(w_set))[0][0]
+            #
+            #         # update weight
+            #         for l, layer in reversed(list(enumerate(self.layers))):
+            #             if l != 0:
+            #                 y_prev_set = []
+            #                 for prev_node in self.layers[l - 1]:
+            #                     y_prev_set.append(prev_node.y)
+            #                 y_prev_set = np.array(y_prev_set).reshape(len(self.layers[l - 1]), 1)
+            #                 for node in layer:
+            #                     new_w = node.w + (momentum_rate * (node.w - node.w_old)) +  (y_prev_set.dot(learning_rate * node.local_gradient))
+            #                     node.w_old = node.w
+            #                     node.w = new_w
+            #     sum_sq_err = []
+            #
+            #
+            #     for cross_data in cross_vad:
+            #         input_data = cross_data[0:8]
+            #         desire_output = [cross_data[8]]
+            #         for l, layer in enumerate(self.layers):
+            #             for i, node in enumerate(layer):
+            #                 if l == 0:
+            #                     node.addInput(input_data[i])
+            #                     node.calculateOutput([])
+            #                 else:
+            #                     x = np.array([prev.y for prev in self.layers[l - 1]]).reshape(1, len(self.layers[l - 1]))
+            #                     node.calculateOutput(x)
+            #
+            #         err = []
+            #         for i, node in enumerate(self.output_layer):
+            #             err.append(prediction_error(desire_output[i], node.y))
+            #
+            #         sum_sq_err.append(np.average(err)**2)
+            #
+            #     print("avg err :", np.average(sum_sq_err) * 100, "%")
 
-                for output_node in self.output_layer:
-                    output_node.local_gradient = local_gradient_output(y=output_node.y,err=err)
 
-                for count,hidden_layer in reversed(list(enumerate(self.hidden_layers))):
-                    for i,node in enumerate(hidden_layer):
-                        summation = 0.0
-                        if count == len(self.hidden_layers) - 1:
-                            summation = sum([out_n.w[i] * out_n.local_gradient for out_n in self.output_layer])
-                        else:
-                            summation = sum([prev_node.w[i] * prev_node.local_gradient for prev_node in self.hidden_layers[count+1]])
-                        node.local_gradient = local_gradient_hidden(node.y, summation)
 
-                #update weight
-                for node in self.output_layer:
-                    for i,w in enumerate(node.w):
-                        new_w = update_weight(current_w=w,old_w=node.w_old[i],
-                                              local_gradient=node.local_gradient,
-                                              y_prev=self.hidden_layers[len(self.hidden_layers) - 1][i].y,alpha=momentum_rate,etha=learning_rate)
-                        node.w_old[i] = w
-                        node.updateWeight(new_w,i)
 
-                for l,hidden_layer in reversed(list(enumerate(self.hidden_layers))):
-                    for node in hidden_layer:
-                        for i, w in enumerate(node.w):
-                            y_prev = 0.0
-                            if l==0:
-                                y_prev = self.input_layer[i].y
-                            else:
-                                y_prev = self.hidden_layers[l-1][i].y
-                            new_w = update_weight(current_w=w, old_w=node.w_old[i],
-                                                  local_gradient=node.local_gradient,
-                                                  y_prev=y_prev,
-                                                  alpha=momentum_rate, etha=learning_rate)
-                            node.w_old[i] = w
-                            node.updateWeight(new_w,i)
-
-                # self.sumary()
-                # if z==70:
-                #     break
-
-                # break  # read one line dataset for test
-
-            # avg_err = avg_err / len(train_dataset)
-            # print("avg err :", avg_err * 100, "%")
-            shuffle(train_dataset)
 
 
