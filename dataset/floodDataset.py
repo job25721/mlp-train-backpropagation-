@@ -17,3 +17,25 @@ def readFloodDataset(file):
         })
         c += 1
     return dataSet
+
+
+
+
+def cross(file):
+    crossValidation = []
+    collect = []
+    c = 0
+    for data in file.readlines():
+        collect.append(data.split("\n")[0])
+        c += 1
+        if c == 3:
+            c = 0
+            pattern = {
+                "name": str(collect[0]),
+                "input": [float(collect[1].split(" ")[0]),float(collect[1].split(" ")[2])],
+                "desire_output": [int(collect[2].split(" ")[0]),int(collect[2].split(" ")[1])]
+            }
+            crossValidation.append(pattern)
+            collect = []
+    return  crossValidation
+
