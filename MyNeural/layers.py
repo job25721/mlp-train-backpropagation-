@@ -7,6 +7,7 @@ class Node:
         self.activation = activation
         self.w = []
         self.w_old = []
+        self.b_old = 0
         self.b = b
         self.local_gradient = None
         self.name = name
