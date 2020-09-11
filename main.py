@@ -55,6 +55,5 @@ def crossTest():
     cross_model.Fit(dataset=dataset,epochs=1000,momentum_rate=random_rate()["m_rate"],learning_rate=random_rate()["l_rate"],cross_validation=0.1)
 
 
-
 crossTest()
 

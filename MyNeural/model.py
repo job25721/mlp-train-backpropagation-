@@ -5,7 +5,6 @@ import numpy as np
 from time import sleep
 import matplotlib.pyplot as plt
 
-
 class Model:
     def __init__(self, input_layer, hidden_layers, output_layer):
         self.input_layer = input_layer
