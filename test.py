@@ -9,5 +9,11 @@ import numpy as np
 
 # print(y)
 
+x = [1,2,3,4]
+
+for i,c in reversed(list(enumerate(x))):
+    print(i)
+
+
 
 

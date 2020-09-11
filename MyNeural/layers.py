@@ -1,7 +1,8 @@
 import numpy as np
 
+
 class Node:
-    def __init__(self,b, activation, name):
+    def __init__(self, b, activation, name):
         self.input = None
         self.y = 0.0
         self.activation = activation
@@ -12,29 +13,30 @@ class Node:
         self.local_gradient = None
         self.name = name
 
+    def save_old_weight(self):
+        self.w_old = self.w
+        self.b_old = self.b
 
-    def updateWeight(self, weight,i):
-        self.w[i] = weight
-
-    def updateBias(self, bias):
+    def updateWeight(self, weight,bias):
+        self.w = weight
         self.b = bias
+
     def showNodeDetail(self):
-        print( "old(n-1) -------\n",self.w_old,"\ncurrent(n) ------\n",self.w, ", b :", self.b, ", input :",
-              self.input,"y :",self.y,"local_grad :",self.local_gradient )
+        print("old(n-1) -------\n", self.w_old, "\ncurrent(n) ------\n", self.w, ", b :", self.b, ", input :",
+              self.input, "y :", self.y, "local_grad :", self.local_gradient)
 
     def addInput(self, input):
         self.input = input
 
-    def calculateOutput(self,prev_y):
-        if len(prev_y ) != 0:
+    def calculateOutput(self, prev_y):
+        if len(prev_y) != 0:
             if self.b == None:
                 self.b = 0.0
-            self.y =  self.activation(prev_y.dot(self.w) + self.b)
+            self.y = self.activation(prev_y.dot(self.w) + self.b)
         else:
             if len(self.w) == 0:
                 self.y = self.input
         return self.y
-
 
 
 def Input(d):
@@ -67,9 +69,9 @@ def layers_sumary(layers):
     for layer in layers:
         print("=================", layer[0].name, "==================")
         if type(layer) == list:
-            i=1
+            i = 1
             for n in layer:
-                print(i,end=" : ")
+                print(i, end=" : ")
                 n.showNodeDetail()
                 i += 1
         else:

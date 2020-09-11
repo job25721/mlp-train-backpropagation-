@@ -1,6 +1,7 @@
 import math
 import numpy as np
 
+
 def normalization(dataset, max_x, min_x):
     normalized_data = []
     for x in dataset:
@@ -21,8 +22,12 @@ def prediction_error(desire_output, actual_output):
     return err
 
 
+def calc_new_weight(w, old_w, m_rate, l_rate, y_prev, local_grad):
+    return w + (m_rate * (w-old_w)) + (y_prev.dot(l_rate*local_grad))
+
+
 def local_gradient_output(y, err):
-    return err * (y *(1-y))
+    return err * (y * (1-y))
 
 
 def local_gradient_hidden(y, summation_next_local_gradient):
@@ -31,5 +36,3 @@ def local_gradient_hidden(y, summation_next_local_gradient):
 
 def sigmoid(x):
     return 1 / (1 + math.exp(-x))
-
-

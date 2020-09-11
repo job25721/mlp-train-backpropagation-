@@ -1,9 +1,10 @@
-from MyNeural.functions import prediction_error, denormalize, local_gradient_output, local_gradient_hidden
+from MyNeural.functions import prediction_error, denormalize, local_gradient_output, local_gradient_hidden, calc_new_weight
 from MyNeural.layers import layers_sumary
 from random import shuffle
 import numpy as np
 from time import sleep
 import matplotlib.pyplot as plt
+
 
 class Model:
     def __init__(self, input_layer, hidden_layers, output_layer):
@@ -46,9 +47,11 @@ class Model:
                 while random_set.__contains__(rand):
                     rand = np.random.randint(0, 10)
                 random_set.append(rand)
-                block.append(dataset[i * cross_len:cross_len + (i * cross_len)])
+                block.append(
+                    dataset[i * cross_len:cross_len + (i * cross_len)])
                 if i == 9 and sum([len(b) for b in block]) < len(dataset):
-                    few_dataset = dataset[cross_len + (i * cross_len):len(dataset)]
+                    few_dataset = dataset[cross_len +
+                                          (i * cross_len):len(dataset)]
 
         plot_data = []
         cross_limit = 10
@@ -71,8 +74,6 @@ class Model:
                 train = dataset
             for epoch in range(epochs):
                 sum_sq_err = []
-                confusion = []
-                all = []
                 for z, data in enumerate(train):
                     input_data = np.array(data["input"])
                     desire_output = np.array(data["desire_output"])
@@ -89,7 +90,7 @@ class Model:
 
                     err = []
 
-                    #find error
+                    # find error
                     for i, node in enumerate(self.output_layer):
                         err.append(prediction_error(desire_output[i], node.y))
                     sum_sq_err.append(np.sum(err) ** 2)
@@ -103,32 +104,32 @@ class Model:
                                     node.local_gradient = local_gradient_output(
                                         node.y, err[i])
                                 else:
-                                    delta_set = np.array([n.local_gradient for n in self.layers[l + 1]]).reshape((1, len(self.layers[l + 1])))
-                                    w_set = np.array([n.w[i] for n in self.layers[l + 1]])
-                                    node.local_gradient = local_gradient_hidden(node.y, delta_set.dot(w_set))[0][0]
+                                    delta_set = np.array(
+                                        [n.local_gradient for n in self.layers[l + 1]]).reshape((1, len(self.layers[l + 1])))
+                                    w_set = np.array(
+                                        [n.w[i] for n in self.layers[l + 1]])
+                                    node.local_gradient = local_gradient_hidden(
+                                        node.y, delta_set.dot(w_set))[0][0]
 
-                    # update weight
+                    # update weight and bias
                     for l, layer in reversed(list(enumerate(self.layers))):
                         if l != 0:
                             y_prev_set = []
                             for prev_node in self.layers[l - 1]:
                                 y_prev_set.append(prev_node.y)
 
-                            y_prev_set = np.array(y_prev_set).reshape(len(self.layers[l - 1]), 1)
+                            y_prev_set = np.array(y_prev_set).reshape(
+                                len(self.layers[l - 1]), 1)
                             for node in layer:
-                                new_w = node.w + (momentum_rate * (node.w - node.w_old)) + (y_prev_set.dot(learning_rate * node.local_gradient))
-                                new_b = node.b + (momentum_rate *(node.b - node.b_old)) + (1*learning_rate*node.local_gradient)
-                                node.w_old = node.w
-                                node.b_old = node.b
-                                node.w = new_w
-                                node.b = new_b
-                print("(cross", c+1, ")EPOCH:", epoch+1," : ", end='')
-                print("accuracy :", (np.average(sum_sq_err))* 100, "%")
+                                new_w = calc_new_weight(w=node.w, old_w=node.w_old, m_rate=momentum_rate,
+                                                        l_rate=learning_rate, y_prev=y_prev_set, local_grad=node.local_gradient)
+                                new_b = node.b + (momentum_rate * (node.b - node.b_old)) +(1*learning_rate*node.local_gradient)
+                                node.save_old_weight()
+                                node.updateWeight(weight=new_w, bias=new_b)
+                print("(cross", c+1, ")EPOCH:", epoch+1, " : ", end='')
+                print("accuracy :", (1 - np.average(sum_sq_err)) * 100, "%")
                 np.random.shuffle(train)
-            print("all" , sum(all))
-            print("correct",sum(confusion))
-            sleep(3)
-            #cross validation
+            # cross validation
             if cross_len != 0:
                 sum_sq_err = []
                 for cross_data in cross_valid:
