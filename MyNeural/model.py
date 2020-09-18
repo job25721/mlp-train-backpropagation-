@@ -35,6 +35,49 @@ class Model:
         layers.append(self.output_layer)
         layers_sumary(layers)
 
+    def feed_forward(self, input_data):
+        for l, layer in enumerate(self.layers):
+            for i, node in enumerate(layer):
+                if l == 0:
+                    node.addInput(input_data[i])
+                    node.calculateOutput([])
+                else:
+                    x = np.array([prev.y for prev in self.layers[l - 1]]
+                                 ).reshape(1, len(self.layers[l - 1]))
+                    node.calculateOutput(x)
+
+    def back_propergation(self, err, momentum_rate, learning_rate):
+        # find delta
+        for l, layer in reversed(list(enumerate(self.layers))):
+            if l != 0:
+                for i, node in enumerate(layer):
+                    if l == len(self.layers) - 1:
+                        node.local_gradient = local_gradient_output(
+                            node.y, err[i])
+                    else:
+                        delta_set = np.array(
+                            [n.local_gradient for n in self.layers[l + 1]]).reshape((1, len(self.layers[l + 1])))
+                        w_set = np.array([n.w[i] for n in self.layers[l + 1]])
+                        node.local_gradient = local_gradient_hidden(
+                            node.y, delta_set.dot(w_set))[0][0]
+
+        # update weight and bias
+        for l, layer in reversed(list(enumerate(self.layers))):
+            if l != 0:
+                y_prev_set = []
+                for prev_node in self.layers[l - 1]:
+                    y_prev_set.append(prev_node.y)
+                y_prev_set = np.array(y_prev_set).reshape(
+                    len(self.layers[l - 1]), 1)
+                for node in layer:
+                    new_w = calc_new_weight(w=node.w, old_w=node.w_old, m_rate=momentum_rate,
+                                            l_rate=learning_rate, y_prev=y_prev_set, local_grad=node.local_gradient)
+                    new_b = node.b + \
+                        (momentum_rate * (node.b - node.b_old)) + \
+                        (1*learning_rate*node.local_gradient)
+                    node.save_old_weight()
+                    node.updateWeight(weight=new_w, bias=new_b)
+
     def Fit(self, dataset, epochs, momentum_rate, learning_rate, cross_validation):
         cross_limit = 10
         train = []
@@ -63,15 +106,7 @@ class Model:
                     input_data = np.array(data["input"])
                     desire_output = np.array(data["desire_output"])
                     # forward
-                    for l, layer in enumerate(self.layers):
-                        for i, node in enumerate(layer):
-                            if l == 0:
-                                node.addInput(input_data[i])
-                                node.calculateOutput([])
-                            else:
-                                x = np.array(
-                                    [prev.y for prev in self.layers[l - 1]]).reshape(1, len(self.layers[l - 1]))
-                                node.calculateOutput(x)
+                    self.feed_forward(input_data)
 
                     err = []
                     # find error
@@ -81,58 +116,24 @@ class Model:
                         MSE.append(np.power(e, 2))
 
                     # back propergate
-                    # find delta
-                    for l, layer in reversed(list(enumerate(self.layers))):
-                        if l != 0:
-                            for i, node in enumerate(layer):
-                                if l == len(self.layers) - 1:
-                                    node.local_gradient = local_gradient_output(
-                                        node.y, err[i])
-                                else:
-                                    delta_set = np.array(
-                                        [n.local_gradient for n in self.layers[l + 1]]).reshape((1, len(self.layers[l + 1])))
-                                    w_set = np.array(
-                                        [n.w[i] for n in self.layers[l + 1]])
-                                    node.local_gradient = local_gradient_hidden(
-                                        node.y, delta_set.dot(w_set))[0][0]
+                    self.back_propergation(err, momentum_rate, learning_rate)
 
-                    # update weight and bias
-                    for l, layer in reversed(list(enumerate(self.layers))):
-                        if l != 0:
-                            y_prev_set = []
-                            for prev_node in self.layers[l - 1]:
-                                y_prev_set.append(prev_node.y)
-                            y_prev_set = np.array(y_prev_set).reshape(
-                                len(self.layers[l - 1]), 1)
-                            for node in layer:
-                                new_w = calc_new_weight(w=node.w, old_w=node.w_old, m_rate=momentum_rate,
-                                                        l_rate=learning_rate, y_prev=y_prev_set, local_grad=node.local_gradient)
-                                new_b = node.b + \
-                                    (momentum_rate * (node.b - node.b_old)) + \
-                                    (1*learning_rate*node.local_gradient)
-                                node.save_old_weight()
-                                node.updateWeight(weight=new_w, bias=new_b)
-                print("cross", c+1, ": EPOCH:", epoch+1, "=> ", end='')
-                print("MSE =", np.average(MSE) * 100, "%")
+                print("cross", c+1, ": EPOCH:", epoch+1, end=' | ')
+                print("MSE =", np.average(MSE) * 100, "%",end=' | ')
+                print("accuracy =", (1 - np.average(MSE)) * 100, "%")
                 printProgressBar(epoch + 1, epochs, prefix='Training',
                                  suffix='', length=25)
                 np.random.shuffle(train)
             # cross validation
             if cross_validation != 0:
                 MSE = []
-                # feed forward
+
                 for cross_data in cross_valid:
                     input_data = np.array(cross_data["input"])
                     desire_output = np.array(cross_data["desire_output"])
-                    for l, layer in enumerate(self.layers):
-                        for i, node in enumerate(layer):
-                            if l == 0:
-                                node.addInput(input_data[i])
-                                node.calculateOutput([])
-                            else:
-                                x = np.array(
-                                    [prev.y for prev in self.layers[l - 1]]).reshape(1, len(self.layers[l - 1]))
-                                node.calculateOutput(x)
+                    # feed forward
+                    self.feed_forward(input_data)
+                    # find MSE
                     for i, node in enumerate(self.output_layer):
                         e = np.power(prediction_error(
                             desire_output[i], node.y), 2)

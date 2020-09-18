@@ -13,7 +13,16 @@ def random_rate():
     return {"m_rate": m, "l_rate": l}
 
 
-def floodModel():
+def create_hidden(hidden_struct):
+    hidden_layers = []
+    for i, h in enumerate(hidden_struct.split("-")):
+        layer_name = 'h' + str(i+1)
+        l = Dense(d=int(h), activation=sigmoid, name=layer_name)
+        hidden_layers.append(l)
+    return hidden_layers
+
+
+def floodModel(ep, struct):
     # ============= read dataset===================
     f = open('./dataset/Flood_dataset.txt', 'r')
     floodDataset = readFloodDataset(file=f)
@@ -33,36 +42,48 @@ def floodModel():
     np.random.shuffle(x)
     # create a neural networks
     InputLayer = Input(d=8)
-    h1 = Dense(d=3, activation=sigmoid, name='h1')
-    h2 = Dense(d=2, activation=sigmoid, name='h2')
     OutputLayer = Output(d=1, activation=sigmoid)
 
     # create model
-    my_model = Model(input_layer=InputLayer, hidden_layers=[
-        h1, h2], output_layer=OutputLayer)
+    my_model = Model(input_layer=InputLayer, hidden_layers=create_hidden(
+        struct), output_layer=OutputLayer)
     my_model.create_model()
     my_model.sumary()
 
     # train model
-    my_model.Fit(dataset=x, epochs=1000, momentum_rate=random_rate()[
+    my_model.Fit(dataset=x, epochs=ep, momentum_rate=random_rate()[
         "m_rate"], learning_rate=random_rate()["l_rate"], cross_validation=0.1)
     my_model.sumary()
 
 
-def crossTest():
+def crossTest(ep, struct):
     f = open('./dataset/cross.pat', 'r')
     dataset = cross(file=f)
     InputLayer = Input(d=2)
-    h1 = Dense(d=3, activation=sigmoid, name='h1')
-    h2 = Dense(d=2, activation=sigmoid, name='h2')
     OutputLayer = Output(d=2, activation=sigmoid)
 
-    cross_model = Model(input_layer=InputLayer, hidden_layers=[
-        h1, h2], output_layer=OutputLayer)
+    cross_model = Model(input_layer=InputLayer, hidden_layers=create_hidden(
+        struct), output_layer=OutputLayer)
     cross_model.create_model()
-    cross_model.Fit(dataset=dataset, epochs=500, momentum_rate=random_rate()[
+    cross_model.Fit(dataset=dataset, epochs=ep, momentum_rate=random_rate()[
         "m_rate"], learning_rate=random_rate()["l_rate"], cross_validation=0.1)
 
 
-# floodModel()
-crossTest()
+cmd = 'init'
+while cmd != "c":
+    cmd = input("1:flood train\n2:cross train\nc:cancel\ncmd > ")
+    if cmd == "1":
+        ep = int(input("epochs ? : "))
+        struct = input("input hidden layers ex.2-3-1 : ")
+        print("flood train")
+        sleep(2)
+        floodModel(ep, struct)
+    elif cmd == "2":
+        ep = int(input("epochs ?"))
+        struct = input("input hidden layers ex.2-3-1 : ")
+        print("cross train")
+        sleep(2)
+        crossTest(ep, struct)
+    elif cmd == "c":
+        print("end process")
+        break

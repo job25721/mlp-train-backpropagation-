@@ -1,7 +1,7 @@
 import numpy as np
-x = [1, 2, 3, 4]
+x = "4"
 
+# print()
 
-x = np.sum(x)
-
-print(x)
+for v in x.split("-"):
+    print(int(v))
