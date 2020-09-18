@@ -34,20 +34,19 @@ def floodModel():
     # create a neural networks
     InputLayer = Input(d=8)
     h1 = Dense(d=3, activation=sigmoid, name='h1')
+    h2 = Dense(d=2, activation=sigmoid, name='h2')
     OutputLayer = Output(d=1, activation=sigmoid)
 
     # create model
     my_model = Model(input_layer=InputLayer, hidden_layers=[
-                     h1], output_layer=OutputLayer)
+        h1, h2], output_layer=OutputLayer)
+    my_model.create_model()
     my_model.sumary()
 
     # train model
-    my_model.Fit(dataset=x, epochs=20, momentum_rate=random_rate()[
-                 "m_rate"], learning_rate=random_rate()["l_rate"], cross_validation=0.1)
+    my_model.Fit(dataset=x, epochs=1000, momentum_rate=random_rate()[
+        "m_rate"], learning_rate=random_rate()["l_rate"], cross_validation=0.1)
     my_model.sumary()
-
-
-floodModel()
 
 
 def crossTest():
@@ -59,6 +58,11 @@ def crossTest():
     OutputLayer = Output(d=2, activation=sigmoid)
 
     cross_model = Model(input_layer=InputLayer, hidden_layers=[
-                        h1, h2], output_layer=OutputLayer)
-    cross_model.Fit(dataset=dataset, epochs=20, momentum_rate=random_rate()[
-                    "m_rate"], learning_rate=random_rate()["l_rate"], cross_validation=0.1)
+        h1, h2], output_layer=OutputLayer)
+    cross_model.create_model()
+    cross_model.Fit(dataset=dataset, epochs=500, momentum_rate=random_rate()[
+        "m_rate"], learning_rate=random_rate()["l_rate"], cross_validation=0.1)
+
+
+# floodModel()
+crossTest()
