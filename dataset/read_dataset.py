@@ -19,8 +19,6 @@ def readFloodDataset(file):
     return dataSet
 
 
-
-
 def cross(file):
     crossValidation = []
     collect = []
@@ -32,10 +30,9 @@ def cross(file):
             c = 0
             pattern = {
                 "name": str(collect[0]),
-                "input": [float(collect[1].split(" ")[0]),float(collect[1].split(" ")[2])],
-                "desire_output": [int(collect[2].split(" ")[0]),int(collect[2].split(" ")[1])]
+                "input": [float(collect[1].split(" ")[0]), float(collect[1].split(" ")[2])],
+                "desire_output": [int(collect[2].split(" ")[0]), int(collect[2].split(" ")[1])]
             }
             crossValidation.append(pattern)
             collect = []
-    return  crossValidation
-
+    return crossValidation

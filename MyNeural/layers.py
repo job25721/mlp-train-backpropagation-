@@ -1,4 +1,5 @@
 import numpy as np
+from MyNeural.functions import local_gradient_output, local_gradient_hidden
 
 
 class Node:
@@ -17,7 +18,7 @@ class Node:
         self.w_old = self.w
         self.b_old = self.b
 
-    def updateWeight(self, weight,bias):
+    def updateWeight(self, weight, bias):
         self.w = weight
         self.b = bias
 
@@ -27,6 +28,12 @@ class Node:
 
     def addInput(self, input):
         self.input = input
+
+    def calculate_localgradient(self, type, err):
+        if type == "output":
+            self.local_gradient = local_gradient_output(self.y, err)
+        elif type == "hidden":
+            self.local_gradient = local_gradient_hidden(self.y, err)[0][0]
 
     def calculateOutput(self, prev_y):
         if len(prev_y) != 0:

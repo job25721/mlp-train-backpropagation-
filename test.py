@@ -1,7 +1,4 @@
-import numpy as np
-x = "4"
+x = [0, 0]
+y = [1, 0]
 
-# print()
-
-for v in x.split("-"):
-    print(int(v))
+print(x == y)

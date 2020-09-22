@@ -1,4 +1,4 @@
-from dataset.floodDataset import readFloodDataset, cross
+from dataset.read_dataset import readFloodDataset, cross
 from MyNeural.functions import normalization, sigmoid
 from MyNeural.model import Model
 from MyNeural.layers import Input, Dense, Output
@@ -39,7 +39,6 @@ def floodModel(ep, struct):
             "input": data[0:8],
             "desire_output": [data[8]]
         })
-    np.random.shuffle(x)
     # create a neural networks
     InputLayer = Input(d=8)
     OutputLayer = Output(d=1, activation=sigmoid)
@@ -52,7 +51,7 @@ def floodModel(ep, struct):
 
     # train model
     my_model.Fit(dataset=x, epochs=ep, momentum_rate=random_rate()[
-        "m_rate"], learning_rate=random_rate()["l_rate"], cross_validation=0.1)
+        "m_rate"], learning_rate=random_rate()["l_rate"], cross_validation=0.1, classification=False)
     my_model.sumary()
 
 
@@ -66,7 +65,7 @@ def crossTest(ep, struct):
         struct), output_layer=OutputLayer)
     cross_model.create_model()
     cross_model.Fit(dataset=dataset, epochs=ep, momentum_rate=random_rate()[
-        "m_rate"], learning_rate=random_rate()["l_rate"], cross_validation=0.1)
+        "m_rate"], learning_rate=random_rate()["l_rate"], cross_validation=0.1, classification=True)
 
 
 cmd = 'init'
@@ -79,7 +78,7 @@ while cmd != "c":
         sleep(2)
         floodModel(ep, struct)
     elif cmd == "2":
-        ep = int(input("epochs ?"))
+        ep = int(input("epochs ? : "))
         struct = input("input hidden layers ex.2-3-1 : ")
         print("cross train")
         sleep(2)

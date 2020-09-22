@@ -1,9 +1,9 @@
-from MyNeural.functions import prediction_error, denormalize, local_gradient_output, local_gradient_hidden, calc_new_weight, cross_validation_split, select_validate, printProgressBar
+from MyNeural.functions import prediction_error, calc_new_weight, cross_validation_split, select_validate, calc_confusion_matrix, print_confusion_matrix, printProgressBar
 from MyNeural.layers import layers_sumary
 from random import shuffle
 import numpy as np
-from time import sleep
 import matplotlib.pyplot as plt
+import time
 
 
 class Model:
@@ -20,13 +20,11 @@ class Model:
             self.layers.append(layer)
         self.layers.append(self.output_layer)
         # initialize weight
-        count = 0
         for i, layer in enumerate(self.layers):
             if i != 0:
                 for node in layer:
                     node.w = np.random.rand(len(self.layers[i-1]), 1)
                     node.w_old = np.zeros((len(self.layers[i-1]), 1))
-                    count += 1
 
     def sumary(self):
         layers = [self.input_layer]
@@ -52,14 +50,13 @@ class Model:
             if l != 0:
                 for i, node in enumerate(layer):
                     if l == len(self.layers) - 1:
-                        node.local_gradient = local_gradient_output(
-                            node.y, err[i])
+                        node.calculate_localgradient("output", err[i])
                     else:
                         delta_set = np.array(
                             [n.local_gradient for n in self.layers[l + 1]]).reshape((1, len(self.layers[l + 1])))
                         w_set = np.array([n.w[i] for n in self.layers[l + 1]])
-                        node.local_gradient = local_gradient_hidden(
-                            node.y, delta_set.dot(w_set))[0][0]
+                        node.calculate_localgradient(
+                            "hidden", delta_set.dot(w_set))
 
         # update weight and bias
         for l, layer in reversed(list(enumerate(self.layers))):
@@ -78,7 +75,7 @@ class Model:
                     node.save_old_weight()
                     node.updateWeight(weight=new_w, bias=new_b)
 
-    def Fit(self, dataset, epochs, momentum_rate, learning_rate, cross_validation):
+    def Fit(self, dataset, epochs, momentum_rate, learning_rate, cross_validation, classification):
         cross_limit = 10
         train = []
         if cross_validation == 0:
@@ -89,9 +86,9 @@ class Model:
             block = cross_data["data_block"]
             rand_set = cross_data["rand_set"]
             remiander_set = cross_data["rem_set"]
+            print(rand_set)
 
         plot_data = []
-        print(rand_set)
 
         for c in range(cross_limit):
             if cross_validation != 0:
@@ -102,32 +99,28 @@ class Model:
                              suffix='', length=25)
             for epoch in range(epochs):
                 MSE = []
+                # train
                 for data in train:
                     input_data = np.array(data["input"])
                     desire_output = np.array(data["desire_output"])
                     # forward
                     self.feed_forward(input_data)
-
                     err = []
                     # find error
                     for i, node in enumerate(self.output_layer):
                         e = prediction_error(desire_output[i], node.y)
                         err.append(e)
                         MSE.append(np.power(e, 2))
-
                     # back propergate
                     self.back_propergation(err, momentum_rate, learning_rate)
-
-                print("cross", c+1, ": EPOCH:", epoch+1, end=' | ')
-                print("MSE =", np.average(MSE) * 100, "%",end=' | ')
-                print("accuracy =", (1 - np.average(MSE)) * 100, "%")
-                printProgressBar(epoch + 1, epochs, prefix='Training',
+                    # break
+                MSE_result = np.average(MSE)
+                printProgressBar(epoch + 1, epochs, prefix=f'Training epcoh:{epoch+1},cross:{c+1}(MSE: {MSE_result}, val_acc: {1 - MSE_result})',
                                  suffix='', length=25)
                 np.random.shuffle(train)
             # cross validation
             if cross_validation != 0:
                 MSE = []
-
                 for cross_data in cross_valid:
                     input_data = np.array(cross_data["input"])
                     desire_output = np.array(cross_data["desire_output"])
@@ -139,7 +132,18 @@ class Model:
                             desire_output[i], node.y), 2)
                         MSE.append(e)
                 plot_data.append(np.average(MSE))
-
+        if classification:
+            confusion_matrix = {
+                "01": {"t": 0, "f": 0},
+                "10": {"t": 0, "f": 0}
+            }
+            for data in train:
+                input_data = np.array(data["input"])
+                desire_output = np.array(data["desire_output"])
+                self.feed_forward(input_data)
+                calc_confusion_matrix(
+                    [node.y for node in self.output_layer], desire_output, confusion_matrix)
+            print_confusion_matrix(confusion_matrix, len(train))
         print("alpha", momentum_rate, "etha", learning_rate)
         plt.title('Cross validation MSE')
         plt.plot(plot_data)

@@ -45,6 +45,26 @@ def classificationRound(o1, o2):
         return [0, 1]
 
 
+def calc_confusion_matrix(output, desire_output, confusion_matrix):
+    predicted = classificationRound(output[0], output[1])
+    a = predicted[0]
+    b = predicted[1]
+    if(predicted == list(desire_output)):
+        confusion_matrix[str(a)+str(b)]["t"] += 1
+    else:
+        confusion_matrix[str(a)+str(b)]["f"] += 1
+
+
+def print_confusion_matrix(confusion_matrix, n):
+    print("=== confusion matrix ===")
+    print("\t0,1\t1,0")
+    print(
+        f'0,1\t{confusion_matrix["01"]["t"]}\t{confusion_matrix["01"]["f"]}\n1,0\t{confusion_matrix["10"]["f"]}\t{confusion_matrix["10"]["t"]}')
+    r = (confusion_matrix["01"]["t"] +
+         confusion_matrix["10"]["t"]) / n
+    print(f"accuracy = {r}")
+
+
 def cross_validation_split(cross_validate_num, dataset):
     cross_len = int(round((len(dataset) * cross_validate_num), 0))
     block = []
