@@ -22,7 +22,7 @@ def create_hidden(hidden_struct):
     return hidden_layers
 
 
-def floodModel(ep, struct):
+def floodModel(ep, struct, m, l):
     # ============= read dataset===================
     f = open('./dataset/Flood_dataset.txt', 'r')
     floodDataset = readFloodDataset(file=f)
@@ -48,14 +48,15 @@ def floodModel(ep, struct):
         struct), output_layer=OutputLayer)
     my_model.create_model()
     my_model.sumary()
+    sleep(3)
 
     # train model
-    my_model.Fit(dataset=x, epochs=ep, momentum_rate=random_rate()[
-        "m_rate"], learning_rate=random_rate()["l_rate"], cross_validation=0.1, classification=False)
+    my_model.Fit(dataset=x, epochs=ep, momentum_rate=m,
+                 learning_rate=l, cross_validation=0.1, classification=False)
     my_model.sumary()
 
 
-def crossTest(ep, struct):
+def crossTest(ep, struct, m, l):
     f = open('./dataset/cross.pat', 'r')
     dataset = cross(file=f)
     InputLayer = Input(d=2)
@@ -64,25 +65,33 @@ def crossTest(ep, struct):
     cross_model = Model(input_layer=InputLayer, hidden_layers=create_hidden(
         struct), output_layer=OutputLayer)
     cross_model.create_model()
-    cross_model.Fit(dataset=dataset, epochs=ep, momentum_rate=random_rate()[
-        "m_rate"], learning_rate=random_rate()["l_rate"], cross_validation=0.1, classification=True)
+    cross_model.Fit(dataset=dataset, epochs=ep, momentum_rate=m,
+                    learning_rate=l, cross_validation=0.1, classification=True)
 
 
 cmd = 'init'
 while cmd != "c":
     cmd = input("1:flood train\n2:cross train\nc:cancel\ncmd > ")
-    if cmd == "1":
+    if cmd != "c":
         ep = int(input("epochs ? : "))
         struct = input("input hidden layers ex.2-3-1 : ")
+        r = input("random m and l (Y/N) ? ")
+        if r == "y" or r == "Y":
+            momentum_rate = random_rate()["m_rate"]
+            learning_rate = random_rate()["l_rate"]
+        else:
+            momentum_rate = float(input("momentum rate ? : "))
+            learning_rate = float(input("learning rate ? : "))
+        print("momentum rate =", momentum_rate,
+              "learning rate =", learning_rate)
+    if cmd == "1":
         print("flood train")
         sleep(2)
-        floodModel(ep, struct)
+        floodModel(ep, struct, momentum_rate, learning_rate)
     elif cmd == "2":
-        ep = int(input("epochs ? : "))
-        struct = input("input hidden layers ex.2-3-1 : ")
         print("cross train")
         sleep(2)
-        crossTest(ep, struct)
+        crossTest(ep, struct, momentum_rate, learning_rate)
     elif cmd == "c":
         print("end process")
         break

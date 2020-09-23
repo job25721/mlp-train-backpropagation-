@@ -3,14 +3,14 @@ from MyNeural.functions import local_gradient_output, local_gradient_hidden
 
 
 class Node:
-    def __init__(self, b, activation, name):
+    def __init__(self, activation, name):
         self.input = None
         self.y = 0.0
         self.activation = activation
         self.w = []
         self.w_old = []
         self.b_old = 0
-        self.b = b
+        self.b = 0
         self.local_gradient = None
         self.name = name
 
@@ -37,8 +37,6 @@ class Node:
 
     def calculateOutput(self, prev_y):
         if len(prev_y) != 0:
-            if self.b == None:
-                self.b = 0.0
             self.y = self.activation(prev_y.dot(self.w) + self.b)
         else:
             if len(self.w) == 0:
@@ -49,7 +47,7 @@ class Node:
 def Input(d):
     input_layer = []
     for i in range(d):
-        node = Node(b=None, activation=None, name="Input")
+        node = Node(activation=None, name="Input")
         input_layer.append(node)
     return input_layer
 
@@ -57,8 +55,7 @@ def Input(d):
 def Dense(d, activation, name):
     hidden_layer = []
     for i in range(d):
-        randBias = round(np.random.uniform(0.1, 1.0), 1)
-        node = Node(b=randBias, activation=activation, name=name)
+        node = Node(activation=activation, name=name)
         hidden_layer.append(node)
     return hidden_layer
 
@@ -66,8 +63,7 @@ def Dense(d, activation, name):
 def Output(d, activation):
     output_layer = []
     for i in range(d):
-        randBias = round(np.random.uniform(0.1, 1.0), 1)
-        node = Node(randBias, activation, name="Output")
+        node = Node(activation=activation, name="Output")
         output_layer.append(node)
     return output_layer
 

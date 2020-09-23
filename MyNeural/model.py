@@ -23,6 +23,7 @@ class Model:
         for i, layer in enumerate(self.layers):
             if i != 0:
                 for node in layer:
+                    node.b = np.random.uniform(0.1, 1.0)
                     node.w = np.random.rand(len(self.layers[i-1]), 1)
                     node.w_old = np.zeros((len(self.layers[i-1]), 1))
 
@@ -89,7 +90,7 @@ class Model:
             print(rand_set)
 
         plot_data = []
-
+        train_plot = []
         for c in range(cross_limit):
             if cross_validation != 0:
                 res = select_validate(block, rand_set, c, remiander_set)
@@ -118,6 +119,8 @@ class Model:
                 printProgressBar(epoch + 1, epochs, prefix=f'Training epcoh:{epoch+1},cross:{c+1}(MSE: {MSE_result}, val_acc: {1 - MSE_result})',
                                  suffix='', length=25)
                 np.random.shuffle(train)
+                if epoch + 1 == epochs:
+                    train_plot.append(MSE_result)
             # cross validation
             if cross_validation != 0:
                 MSE = []
@@ -145,6 +148,9 @@ class Model:
                     [node.y for node in self.output_layer], desire_output, confusion_matrix)
             print_confusion_matrix(confusion_matrix, len(train))
         print("alpha", momentum_rate, "etha", learning_rate)
-        plt.title('Cross validation MSE')
-        plt.plot(plot_data)
+        plt.title(
+            f'MSE result \n momentum rate={momentum_rate} learning rate={learning_rate}')
+        plt.plot(plot_data, label='Cross validation test')
+        plt.plot(train_plot, label='Train')
+        plt.legend()
         plt.show()
