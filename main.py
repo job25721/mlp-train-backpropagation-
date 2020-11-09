@@ -2,7 +2,6 @@ from dataset.read_dataset import readFloodDataset, cross
 from MyNeural.functions import normalization, sigmoid
 from MyNeural.model import Model
 from MyNeural.layers import Input, Dense, Output
-from random import shuffle
 from time import sleep
 import numpy as np
 
@@ -47,13 +46,13 @@ def floodModel(ep, struct, m, l):
     my_model = Model(input_layer=InputLayer, hidden_layers=create_hidden(
         struct), output_layer=OutputLayer)
     my_model.create_model()
-    my_model.sumary()
+    my_model.summary()
     sleep(3)
 
     # train model
     my_model.Fit(dataset=x, epochs=ep, momentum_rate=m,
                  learning_rate=l, cross_validation=0.1, classification=False)
-    my_model.sumary()
+    my_model.summary()
 
 
 def crossTest(ep, struct, m, l):
@@ -65,6 +64,7 @@ def crossTest(ep, struct, m, l):
     cross_model = Model(input_layer=InputLayer, hidden_layers=create_hidden(
         struct), output_layer=OutputLayer)
     cross_model.create_model()
+    cross_model.summary()
     cross_model.Fit(dataset=dataset, epochs=ep, momentum_rate=m,
                     learning_rate=l, cross_validation=0.1, classification=True)
 

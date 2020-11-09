@@ -1,4 +1,3 @@
-import math
 import numpy as np
 
 
@@ -35,7 +34,7 @@ def local_gradient_hidden(y, summation_next_local_gradient):
 
 
 def sigmoid(x):
-    return 1 / (1 + math.exp(-x))
+    return 1 / (1 + np.exp(-x))
 
 
 def classificationRound(o1, o2):
@@ -84,7 +83,6 @@ def cross_validation_split(cross_validate_num, dataset):
         "rand_set": random_set,
         "rem_set": remainder_set
     }
-
 
 
 def select_validate(block, random_set, c, rem_set):

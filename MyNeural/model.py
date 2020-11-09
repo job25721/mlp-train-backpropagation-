@@ -1,9 +1,7 @@
 from MyNeural.functions import prediction_error, calc_new_weight, cross_validation_split, select_validate, calc_confusion_matrix, print_confusion_matrix, printProgressBar
 from MyNeural.layers import layers_sumary
-from random import shuffle
 import numpy as np
 import matplotlib.pyplot as plt
-import time
 
 
 class Model:
@@ -27,7 +25,7 @@ class Model:
                     node.w = np.random.rand(len(self.layers[i-1]), 1)
                     node.w_old = np.zeros((len(self.layers[i-1]), 1))
 
-    def sumary(self):
+    def summary(self):
         layers = [self.input_layer]
         for h in self.hidden_layers:
             layers.append(h)
